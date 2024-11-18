@@ -1,25 +1,81 @@
 plugins {
-	id 'java-library'
-	// Automatic lombok and delombok configuration
-	id 'io.freefair.lombok'           version "$lombokVersion"
-	// Help analyzing code format
-	id 'com.diffplug.gradle.spotless' version "$spotlessVersion" apply false
+    id "java"
+    // Automatic lombok and delombok configuration
+    id 'io.freefair.lombok'           version "$lombokVersion"
+    // Help analyzing code format
+    id 'com.diffplug.spotless' version "$spotlessVersion" apply false
 }
 
 group = "$PROJECT_GROUPNAME"
 version = "$PROJECT_VERSION"
-description = 'Pet project using Java and spotless to keep code with gradle'
+description = 'Pet project using Java and spotless to keep code formatted with gradle Spotless plugin'
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
 
-// repositories allowed to management dependencies
-apply from: "$rootDir/config/gradle/repositories.gradle"
-// Add support to check code format
-apply from: "$rootDir/config/gradle/format.gradle"
-// Add support to testing steps
-apply from: "$rootDir/config/gradle/testing.gradle"
+repositories {
+    mavenCentral()
+}
 
 dependencies {
-	implementation "org.apache.commons:commons-lang3:$commonsLang3Version"
+    implementation "org.apache.commons:commons-lang3:$commonsLang3Version"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$jUnitJupiterVersion"
+    testImplementation "org.junit.jupiter:junit-jupiter-engine:$jUnitJupiterVersion"
+    testImplementation "org.assertj:assertj-core:$assertJCoreVersion"
+}
+
+apply plugin: 'java-library'
+// Apply to execute keep code
+apply plugin: 'com.diffplug.spotless'
+
+// goal: gradle spotlessApply || gradle check
+spotless {
+    // optional: limit format enforcement to just the files changed by this feature branch
+    // ratchetFrom 'origin/develop' // Causing error in gitlab pipeline, as it has no reference to origin/develop
+
+    encoding 'UTF-8' // all formats will be interpreted as UTF-8
+
+    format 'misc', {
+        // define the files to apply `misc` to
+        target '*.gradle', '.gitattributes', '.gitignore', '**/*.md'
+
+        // define the steps to apply to those files
+        trimTrailingWhitespace()
+        indentWithSpaces() // or Tabs. Takes an integer argument if you don't like 4
+        endWithNewline()
+    }
+    java {
+        // don't need to set target, it is inferred from java
+        targetExclude('**/generated/**', '**/build/**', '**/build-*/**')
+        importOrder() // Use the default importOrder configuration
+        removeUnusedImports()
+        toggleOffOn() // Toggle formatting in code by a comment
+        trimTrailingWhitespace() // All trailing whitespaces in the code are removed
+        endWithNewline() // The file ends with a new line
+        cleanthat() // cleanthat will refactor your code, but it may break your style: apply it before your formatter
+        indentWithSpaces()
+        // prettier(['prettier': '3.3.3', 'prettier-plugin-java': '2.6.5']).config(['parser': 'java', 'plugins': ['prettier-plugin-java']]).configFile('./.prettierrc') // Prettier formatter
+        // googleJavaFormat() // Google java formatter does not allow line lengths more than 100, and is bad for lambdas.
+        palantirJavaFormat('2.50.0').style("PALANTIR").formatJavadoc(false)  // Palantir is not being well maintained and does not support Java 21 and also does not allow line lengths beyond 120 chars.: https://github.com/palantir/palantir-java-format/issues/952
+        formatAnnotations()  // fixes formatting of type annotations, see below
+    }
+}
+
+// to delimiter execution at needed pre-step
+compileJava.dependsOn 'spotlessApply'
+
+tasks.register('installGitHooks', Copy) {
+    println '================================================'
+    println 'Installing commit-msg Git hook in .git/hooks - hang tight!'
+    println '================================================'
+    from new File(rootProject.rootDir, 'commit-msg.sh')
+    into { new File(rootProject.rootDir, '.git/hooks') }
+}
+
+test.dependsOn installGitHooks
+
+test {
+    useJUnitPlatform()
 }

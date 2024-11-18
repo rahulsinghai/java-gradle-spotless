@@ -1,4 +1,4 @@
-# Keep your code with Gradle [![Awesome](https://awesome.re/badge-flat.svg)](https://awesome.re)
+# Keep your code formatted with Gradle
 
 ## :clipboard: Introduction
 
@@ -6,20 +6,31 @@
 
 ## :cloud: Getting Started
 
-Follow along this notes. You will need to have at least [Java 8](https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html) installed or some openJDK distribution, and [Gradle](https://gradle.org/) on the PATH. 
+Follow along this notes. You will need to have at least **Java 11** installed or some openJDK distribution, and [Gradle](https://gradle.org/) on the PATH.
 
-You can use some package management tool for windows. E.g. [Chocolatey](https://chocolatey.org/)
+You can use some package management tool to install Java & Gradle.
+[SDKMan](https://sdkman.io/install)! is a tool for managing parallel versions of multiple Software Development Kits on most Unix-based systems.
 
-*	[OpenJDK8 Zulu](https://azul.com) - Java Development Kits (OpenJDK build)
+```shell
+sdk version
+sdk selfupdate force
+sdk update
+```
+
+*	JAVA 11 - Java Development Kit
 
 ```
-choco install zulu8 -y
+sdk list java
+sdk install java
+
+sdk install java 11.0.23-tem
+sdk use java 11.0.23-tem
 ```
 
 *	[Gradle](https://gradle.org/) - Constructor and manager dependencies
 
 ```
-choco install gradle --version 5.6.4 -y
+sdk install gradle 8.11
 ```
 
 Clone this repository, and fire up a command-line tool.
@@ -31,7 +42,9 @@ Clone this repository, and fire up a command-line tool.
 To execute the next command line:
 
 ```
-gradle compileJava
+./gradlew spotlessCheck
+./gradlew spotlessApply
+./gradlew build
 ```
 
 You can check unused import is removed out _Alphanumeric_ class:
@@ -45,4 +58,4 @@ import java.lang.Number
 I will continue to do things and expose notes, but existing many ways to support what I do:
 * Pull requests are welcome a :dizzy:
 * Don't forget to give this Repository a :star2:
-* <a href="https://www.buymeacoffee.com/pedringcoding" title="Donate to this content using BuyMeACoffee">Buy me a :coffee:</a>
+* <a href="https://www.buymeacoffee.com/rahulsinghai" title="Donate to this content using BuyMeACoffee">Buy me a :coffee:</a>

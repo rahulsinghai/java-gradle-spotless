@@ -1,0 +1,16 @@
+# Ignore artifacts:
+.gitlab
+.gradle
+.idea
+acceptance-tests
+build
+build-toolsbuildSrc
+checkstyle
+ci-cd-pipeline
+coverage
+docker
+gradle
+schema
+
+**/*.html
+CHANGELOG*
